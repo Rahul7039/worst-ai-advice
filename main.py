@@ -19,14 +19,28 @@ ENTRY = (
 OUTPUT_PATH = os.environ.get("OUTPUT_PATH", "/output/entry.txt")
 
 
+def validate_entry(entry: str) -> str:
+    """Return the entry if it fits the one-line limits, else raise.
+
+    Uses explicit checks rather than assert so validation still runs
+    under `python -O`, where assert statements are stripped.
+    """
+    if not 1 <= len(entry) <= 140:
+        raise ValueError("entry must be 1-140 characters")
+    if not entry.strip():
+        raise ValueError("entry must not be only whitespace")
+    if "\n" in entry:
+        raise ValueError("entry must be a single line")
+    return entry
+
+
 def main() -> None:
-    assert 1 <= len(ENTRY) <= 140, "entry must be 1-140 characters"
-    assert ENTRY.strip(), "entry must not be only whitespace"
+    entry = validate_entry(ENTRY)
     parent = os.path.dirname(OUTPUT_PATH)
     if parent:
         os.makedirs(parent, exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8", newline="\n") as f:
-        f.write(ENTRY)
+        f.write(entry)
 
 
 if __name__ == "__main__":
